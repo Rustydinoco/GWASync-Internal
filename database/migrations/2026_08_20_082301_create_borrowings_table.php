@@ -13,13 +13,15 @@ return new class extends Migration
     {
         Schema::create('borrowings', function (Blueprint $table) {
             $table->id();
-            $table->string('item_code', 50)->unique();
-            $table->string('name', 150);
-            $table->enum('category', ['Brass', 'Battery', 'Pit_Instrument', 'Guard', 'Properti']);
-            $table->enum('condition', ['Baik', 'Rusak Ringan', 'Rusak Berat'])->default('Baik');
+            $table->datetime('start_date');
+            $table->datetime('end_date');
             $table->enum('status', ['Tersedia', 'Dipinjam', 'Maintenance'])->default('Tersedia');
-            $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->unsignedBigInteger('approved_by')->nullable();
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->CascadeOnDelete();
+            $table->foreign('inventory_id')->references('id')->on('inventories')->CascadeOnDelete();
+            $table->foreign('approved_by')->references('id')->on('users')->nullOnDelete();
         });
     }
 
