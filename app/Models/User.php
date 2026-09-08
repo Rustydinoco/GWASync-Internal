@@ -6,13 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Filament\Panel;
-use Filament\Models\Contracts\FilamentUser;
 
+// Filament imports dihapus dari sini
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable // implements FilamentUser dihapus
 {
-
     use HasFactory, Notifiable;
 
     protected $fillable = [
@@ -60,11 +58,6 @@ class User extends Authenticatable implements FilamentUser
     public function verifiedAttendances(): HasMany
     {
         return $this->hasMany(Attendance::class, 'verified_by');
-    }
-
-    public function canAccessPanel(Panel $panel): bool
-    {
-        return in_array($this->role, ['ketua_umum','pengurus','anggota']);
     }
 
 }

@@ -27,14 +27,14 @@ graph TD
     Peng[Pengurus / Admin]
 
     %% Front-End Sistem 1
-    subgraph Sistem 1: GWASync Public Portal
+    subgraph S1 [Sistem 1: GWASync Public Portal]
         P1[Landing Page & Profil]
         P2[Form Pendaftaran Anggota]
         P3[Portal Kemitraan & Donasi]
     end
 
     %% Front-End Sistem 2
-    subgraph Sistem 2: Internal Management System
+    subgraph S2 [Sistem 2: Internal Management System]
         I1[Dashboard Pengurus]
         I2[Manajemen Peminjaman Alat]
         I3[Pemindai Presensi QR]
@@ -42,12 +42,12 @@ graph TD
     end
 
     %% Middleware / Bridge
-    subgraph Data Pipeline Bridge
-        API[REST API Gateway <br> *Token-Authenticated JWT*]
+    subgraph Bridge [Data Pipeline Bridge]
+        API[REST API Gateway <br> Token-Authenticated JWT]
     end
 
     %% Database Terpusat
-    subgraph Data Tier
+    subgraph DB_Tier [Data Tier]
         DB[(Centralized Database)]
     end
 
@@ -64,13 +64,13 @@ graph TD
     Peng --> I3
 
     %% Interaksi Sistem ke API
-    P2 -- Mengirim Data Calon Anggota --> API
-    P3 -- Mengirim Data Mitra --> API
+    P2 -->|Mengirim Data Calon Anggota| API
+    P3 -->|Mengirim Data Mitra| API
     
-    I1 <-- Verifikasi Data --> API
-    I2 <-- Update Stok Alat --> API
-    I3 <-- Catat Kehadiran --> API
-    I4 <-- Tarik Data Profil --> API
+    I1 <-->|Verifikasi Data| API
+    I2 <-->|Update Stok Alat| API
+    I3 <-->|Catat Kehadiran| API
+    I4 <-->|Tarik Data Profil| API
 
     %% API ke Database
     API <--> DB
@@ -151,11 +151,10 @@ Desain antarmuka internal difokuskan pada tata letak vertikal (vertical layout) 
 *(Tech stack disesuaikan dengan arsitektur decoupled/pendekatan frontend-specific)*
 
 ### Sistem 2: Internal Management System (TALL Stack & Filament)
-* **Framework Utama (Back-End):** Laravel (PHP). Menangani seluruh logika bisnis, keamanan (otentikasi & otorisasi), pengelolaan database, dan routing.
-* **Admin Panel Builder:** Filament PHP. Digunakan sebagai fondasi utama untuk membangun dashboard pengurus, manajemen inventaris, dan tabel data anggota. Konfigurasi panel Filament akan disesuaikan menggunakan vertical layout secara penuh pada bagian navigasi (sidebar), sehingga akses antar modul tetap terstruktur, rapi, dan konsisten dengan preferensi desain antarmuka.
-* **Front-End Interactivity:** Livewire (menangani interaksi real-time dan dynamic components tanpa perlu menulis banyak API) dan Alpine.js (untuk interaktivitas UI ringan seperti dropdown atau modal QR Code).
-* **Styling:** Tailwind CSS. Memberikan fleksibilitas desain berbasis utilitas bawaan dari ekosistem Filament.
-
+* **Framework Utama (Back-End):** Menangani seluruh logika bisnis, keamanan (otentikasi & otorisasi berbasis token dengan Laravel Sanctum), pengelolaan database (Eloquent ORM), dan bertindak sebagai penyedia REST API tunggal (API Gateway) untuk Sistem 1 dan Sistem 2.
+* **Framework Utama (Front-End):** Vue.js 3 (Composition API).  Menggunakan pendekatan Single Page Application (SPA) murni atau diintegrasikan melalui Inertia.js (jika ingin menghindari pembuatan REST API terpisah dan tetap mempertahankan routing monolitik Laravel).
+* **State Management & Interactivity:** Pinia (pengganti Vuex) untuk mengelola state global di sisi klien (seperti menyimpan data profil user yang sedang login atau status cart peminjaman alat), dan Vue Router untuk navigasi antar modul internal secara instan tanpa reload halaman.
+* **Styling & UI Components:** Tailwind CSS dikombinasikan dengan library komponen Vue seperti PrimeVue, Vuetify, atau Headless UI. Mempermudah pembuatan tata letak vertikal (sidebar navigation), tabel data (datatable) inventaris, dan dashboard statistik agar tetap rapi, responsif, dan konsisten.
 ### Database & Storage
 * **Relational Database:** MySQL atau PostgreSQL. Sangat kompatibel dengan Eloquent ORM dari Laravel untuk mengelola relasi kompleks antara data Users, Inventory, dan Attendance.
 * **Storage:** Local Storage atau Amazon S3 (melalui Laravel Filesystem) untuk menyimpan lampiran berkas pendaftaran (KTM/Foto) dan dokumen sponsorship.
