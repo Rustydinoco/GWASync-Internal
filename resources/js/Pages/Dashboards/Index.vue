@@ -1,15 +1,85 @@
 <script setup>
-import InternalLayout from '@/Layouts/InternalLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import InternalLayout from '../../Layouts/InternalLayout.vue';
+import { Head, useForm } from '@inertiajs/vue3';
+
+// Menerima data statistik dan pending borrowings dari Controller
+const props = defineProps({
+    stats: Object,
+    pendingBorrowings: Array
+});
+
+// Fungsi untuk menyetujui peminjaman langsung dari dashboard
+const approveBorrowing = (id) => {
+    useForm({ status: 'Disetujui' }).patch(`/borrowings/${id}/status`);
+};
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head title="Dashboard Pengurus" />
 
     <InternalLayout>
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Selamat Datang di GWASync!</h3>
-            <p class="text-gray-600">Sistem manajemen logistik dan operasional MBGWA.</p>
+        <!-- Header -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-900">Dashboard Operasional</h2> 
+        </div>
+
+        <!-- Metric Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="p-3 rounded-lg bg-blue-100 text-blue-600">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Total Anggota Aktif</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ stats.totalMembers }}</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="p-3 rounded-lg bg-purple-100 text-purple-600">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Alat Sedang Dipinjam</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ stats.activeBorrowings }}</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="p-3 rounded-lg bg-red-100 text-red-600">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Alat Butuh Perbaikan</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ stats.damagedInventories }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Pending Approvals -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-900">Peminjaman Menunggu Persetujuan</h3>
+                <a href="/borrowings" class="text-sm text-blue-600 hover:underline font-medium">Lihat Semua &rarr;</a>
+            </div>
+            
+            <div class="space-y-4">
+                <div v-for="req in pendingBorrowings" :key="req.id" class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100">
+                    <div>
+                        <p class="text-sm font-bold text-gray-900">{{ req.user?.name ?? 'Pengguna' }}</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Meminjam ID Alat: {{ req.inventory_id }} &bull; Periode: {{ req.start_date }} s/d {{ req.end_date }}</p>
+                    </div>
+                    <div>
+                        <button @click="approveBorrowing(req.id)" class="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700">
+                            Setujui
+                        </button>
+                    </div>
+                </div>
+                
+                <div v-if="!pendingBorrowings.length" class="text-center py-6 text-sm text-gray-500">
+                    Tidak ada pengajuan peminjaman baru saat ini.
+                </div>
+            </div>
         </div>
     </InternalLayout>
 </template>

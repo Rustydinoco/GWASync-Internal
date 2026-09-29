@@ -13,15 +13,19 @@ return new class extends Migration
     {
         Schema::create('borrowings', function (Blueprint $table) {
             $table->id();
+            
+            // 1. Buat kolom sekaligus relasinya secara otomatis
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('inventory_id')->constrained('inventories')->cascadeOnDelete();
+            $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
+
             $table->datetime('start_date');
             $table->datetime('end_date');
-            $table->enum('status', ['Tersedia', 'Dipinjam', 'Maintenance'])->default('Tersedia');
-            $table->unsignedBigInteger('approved_by')->nullable();
+            
+            // 2. Gunakan enum status transaksi (sesuai form Vue)
+            $table->enum('status', ['Pending', 'Disetujui', 'Ditolak', 'Dikembalikan'])->default('Pending');
+            
             $table->timestamps();
-
-            $table->foreign('user_id')->references('id')->on('users')->CascadeOnDelete();
-            $table->foreign('inventory_id')->references('id')->on('inventories')->CascadeOnDelete();
-            $table->foreign('approved_by')->references('id')->on('users')->nullOnDelete();
         });
     }
 

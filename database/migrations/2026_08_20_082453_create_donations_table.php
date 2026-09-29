@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('amount', 15, 2);
             $table->string('proof_of_transfer', 255);
             $table->enum('status', ['Pending', 'Terverifikasi'])->default('Pending');
-            $table->foreign('verified_by')->references('id')->on('users')->nullOnDelete();
+            $table->foreignId('verified_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

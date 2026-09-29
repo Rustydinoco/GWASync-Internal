@@ -23,6 +23,8 @@
         "@laravel/multiplex": "^0.4.1"
     },
     "dependencies": {
+        "@vueform/multiselect": "^2.6.11",
+        "lodash": "^4.18.1",
         "pinia": "^4.0.3"
     }
 }

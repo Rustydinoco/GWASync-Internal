@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('phone', 15);
             $table->string('email', 100);
             $table->enum('status', ['Prospek', 'Negosiasi', 'Deal', 'Ditolak'])->default('Prospek');
-            $table->foreign('verified_by')->references('id')->on('users')->nullOnDelete();
+            $table->foreignId('verified_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }
