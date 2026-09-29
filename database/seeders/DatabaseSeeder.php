@@ -17,21 +17,21 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
         User::create([
-            'nia' => 'GWA-2024-003',
-            'name' => 'Agus Anggota',
-            'email' => 'anggota@gwasync.com',
+            'nia' => '243301057',
+            'name' => 'Bilal Achmad Ramadhan',
+            'email' => 'bilalachmad@gwasync.com',
             'password' => '12345',
-            'role' => 'anggota',
+            'role' => 'ketua_umum',
             'phone' => '081234567892',
         ]);
 
         // 4. Buat Akun Calon Anggota (Belum punya NIA)
         User::create([
             'nia' => null,
-            'name' => 'Rina Calon',
-            'email' => 'calon@gwasync.com',
+            'name' => 'Mohammad Abiyyu Toraseno Prasetya',
+            'email' => 'abiyyu@gwasync.com',
             'password' => '12345',
-            'role' => 'calon',
+            'role' => 'pengurus',
             'phone' => '081234567893',
         ]);
     }

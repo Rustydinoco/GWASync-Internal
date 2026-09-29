@@ -22,4 +22,14 @@ export default defineConfig({
             vue: 'vue/dist/vue.esm-bundler.js',
         },
     },
+
+    server: {
+        host: '0.0.0.0', // Agar Vite bisa didengarkan dari luar container Docker
+        port: 5173,
+        strictPort: true,
+        hmr: {
+            host: 'localhost', // Memaksa browser/Laravel mencari Hot Module Replacement di localhost Windows
+            port: 5173,
+        },
+    },
 });

@@ -13,6 +13,9 @@ class Borrowing extends Model
         'end_date',
         'status',
         'approved_by',
+        'item_code',
+        'name',
+        'category',
     ];
 
     protected $casts = [
