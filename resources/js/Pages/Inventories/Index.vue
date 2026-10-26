@@ -38,6 +38,7 @@ const form = useForm({
     category: 'Brass',
     condition: 'Baik',
     status: 'Tersedia',
+    catatan: '', // Tambahkan field catatan
 });
 
 // Fungsi membuka modal untuk Tambah Data
@@ -59,6 +60,7 @@ const openEditModal = (item) => {
     form.category = item.category;
     form.condition = item.condition;
     form.status = item.status;
+    form.catatan = item.catatan; // Isi catatan jika ada    
     
     form.clearErrors();
     showModal.value = true;
@@ -137,13 +139,14 @@ const deleteItem = (id) => {
                             <th class="py-3 px-6 font-semibold">Kategori</th>
                             <th class="py-3 px-6 font-semibold">Kondisi</th>
                             <th class="py-3 px-6 font-semibold">Status</th>
+                            <th class="py-3 px-6 font-semibold">Catatan</th>
                             <th class="py-3 px-6 font-semibold text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm text-gray-700">
                       
                         <tr v-if="!inventories || inventories.length === 0">
-                            <td colspan="6" class="py-8 text-center text-gray-500">Belum ada data inventaris.</td>
+                            <td colspan="7" class="py-8 text-center text-gray-500">Belum ada data inventaris.</td>
                         </tr>
                     
                         <tr v-else v-for="item in inventories" :key="item.id" class="border-b border-gray-50 hover:bg-gray-50/50">
@@ -156,8 +159,14 @@ const deleteItem = (id) => {
                             <td class="py-3 px-6">
                                 <span class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">{{ item.status }}</span>
                             </td>
+                            <td class="py-3 px-6 text-gray-500 text-xs">
+                                {{ item.catatan || '-' }}
+                            </td>
                             <td class="py-3 px-6 text-right">
                                 <button @click="openEditModal(item)" class="text-blue-600 hover:text-blue-800 text-sm mr-3 font-medium">Edit</button>
+                
+                
+                
                                 <button @click="deleteItem(item.id)" class="text-red-600 hover:text-red-800 text-sm font-medium">Hapus</button>
                             </td>
                         </tr>
@@ -216,6 +225,18 @@ const deleteItem = (id) => {
                                 <option value="Maintenance">Maintenance</option>
                             </select>
                         </div>
+
+                        <div>
+                       <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+                        <textarea 
+                            v-model="form.catatan" 
+                            rows="3"
+                            placeholder="Contoh: Mellophone Yamaha" 
+                            class="w-full border rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        ></textarea>
+                        <div v-if="form.errors.catatan" class="text-red-500 text-xs mt-1">{{ form.errors.catatan }}</div>
+                    </div>
+
                     </div>
 
                     <div class="flex justify-end gap-3 mt-6">

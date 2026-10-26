@@ -18,6 +18,7 @@ return new class extends Migration
             $table->enum('category', ['Brass', 'Battery', 'Pit_Instrument', 'Guard', 'Properti']);
             $table->enum('condition', ['Baik', 'Rusak Ringan', 'Rusak Berat'])->default('Baik');
             $table->enum('status', ['Tersedia', 'Dipinjam', 'Maintenance'])->default('Tersedia');
+            $table->string('catatan', 255)->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +26,7 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
+
     public function down(): void
     {
         Schema::dropIfExists('inventories');

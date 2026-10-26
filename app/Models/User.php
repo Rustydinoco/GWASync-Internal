@@ -20,12 +20,12 @@ class User extends Authenticatable // implements FilamentUser dihapus
         'password',
         'role',
         'phone',
-        'kta_qr_code',
+        'division',
+        'status',
     ];
     
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password', 
     ];
 
     protected function casts(): array

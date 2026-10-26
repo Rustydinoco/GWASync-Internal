@@ -14,7 +14,8 @@ class Inventory extends Model
         'item_code',
         'category',
         'condition',
-        'status'
+        'status',
+        'catatan'
     ];
 
     public function borrowings(): HasMany

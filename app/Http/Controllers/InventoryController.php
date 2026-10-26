@@ -14,7 +14,8 @@ class InventoryController extends Controller {
                                 ->orWhere('item_code', 'like', "%{$search}%")
                                 ->orWhere('category', 'like', "%{$search}%")
                                 ->orWhere('condition', 'like', "%{$search}%")
-                                ->orWhere('status', 'like', "%{$search}%");
+                                ->orWhere('status', 'like', "%{$search}%")
+                                ->orWhere('catatan', 'like', "%{$search}%");
                 })->latest()->get();
 
 
@@ -34,6 +35,7 @@ class InventoryController extends Controller {
             'category' => 'required|string|max:255',
             'condition' => 'required|string|max:255',
             'status' => 'required|string|max:255',
+            'catatan' => 'nullable|string|max:255', // Validasi untuk catatan
         ]);
 
         // Membuat inventaris baru
@@ -62,6 +64,7 @@ class InventoryController extends Controller {
             'category' => 'required|string|max:255',
             'condition' => 'required|string|max:255',
             'status' => 'required|string|max:255',
+            'catatan' => 'nullable|string|max:255',
         ]);
 
         // Mencari inventaris berdasarkan ID

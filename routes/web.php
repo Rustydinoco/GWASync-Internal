@@ -5,6 +5,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\BorrowingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\MemberController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -17,7 +18,7 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return Inertia::render('Dashboards/Index'); // Sesuaikan dengan nama folder foldernya
 });
-  Route::middleware(['auth', 'verified'])->group(function () {
+  //Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.post');
@@ -38,7 +39,9 @@ Route::get('/', function () {
     Route::get('/events', [EventController::class, 'index'])->name('events.index');
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
     Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
-  });
+
+    Route::resource('members', MemberController::class)->except(['create', 'show', 'edit']);
+  //});
 //Route::get('/dashboard', function () {
 
 
