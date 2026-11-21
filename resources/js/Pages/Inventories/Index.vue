@@ -9,6 +9,7 @@ import debounce from 'lodash/debounce';
 const props = defineProps({
     inventories: Array,
     filters: Object, // Tangkap nilai pencarian sebelumnya dari controller
+    userRole: String
 });
 
 // Jadikan nilai default sesuai yang dikirim dari backend
@@ -22,10 +23,6 @@ watch(search, debounce((value) => {
         replace: true, // Biar riwayat tombol 'back' di browser tidak penuh
     });
 }, 300));
-
-// DefineProps({
-//     inventories: Array
-// });
 
 // State untuk mengatur modal
 const showModal = ref(false);
@@ -100,37 +97,37 @@ const deleteItem = (id) => {
     <InternalLayout>
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <!-- Header Halaman -->
-            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <div class="p-4 sm:p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-gray-50/50">
                 <div>
-                    <h3 class="text-lg font-bold text-gray-900">Daftar Inventaris Alat</h3>
-                    <p class="text-sm text-gray-500 mt-1">Kelola data alat musik, seragam, dan properti MBGWA.</p>
+                    <h3 class="text-base sm:text-lg font-bold text-gray-900">Daftar Inventaris Alat</h3>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Kelola data alat musik, seragam, dan logistik MBGWA.</p>
                 </div>
                 <!-- Panggil openAddModal saat tombol diklik -->
-                <button 
+                <button v-if="['ketua_umum', 'pengurus'].includes(userRole)"
                     @click="openAddModal"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors text-center shadow-xs"
                 >
                     + Tambah Alat
                 </button>
             </div>
 
             <!-- Pencarian -->
-             <div class="p-4 border-b bg-white">
+            <div class="p-3 sm:p-4 border-b bg-white">
                 <div class="relative w-full md:w-1/3">
                     <input 
                         v-model="search" 
                         type="text" 
                         placeholder="Cari nama alat, kode, atau kategori..." 
-                        class="w-full border rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="w-full border rounded-lg pl-10 pr-4 py-2 text-xs sm:text-sm focus:ring-blue-500 focus:border-blue-500"
                     >
-                    <!-- Ikon Kaca Pembesar (Opsional) -->
-                    <svg class="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                 </div>
             </div>
-            <!-- Tabel Data -->
-            <div class="overflow-x-auto">
+
+            <!-- Tabel Data Desktop (hidden on mobile) -->
+            <div class="hidden md:block overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-50 text-gray-600 text-sm border-b border-gray-100">
@@ -144,11 +141,9 @@ const deleteItem = (id) => {
                         </tr>
                     </thead>
                     <tbody class="text-sm text-gray-700">
-                      
                         <tr v-if="!inventories || inventories.length === 0">
                             <td colspan="7" class="py-8 text-center text-gray-500">Belum ada data inventaris.</td>
                         </tr>
-                    
                         <tr v-else v-for="item in inventories" :key="item.id" class="border-b border-gray-50 hover:bg-gray-50/50">
                             <td class="py-3 px-6 font-medium text-gray-900">{{ item.item_code }}</td>
                             <td class="py-3 px-6">{{ item.name }}</td>
@@ -163,21 +158,49 @@ const deleteItem = (id) => {
                                 {{ item.catatan || '-' }}
                             </td>
                             <td class="py-3 px-6 text-right">
-                                <button @click="openEditModal(item)" class="text-blue-600 hover:text-blue-800 text-sm mr-3 font-medium">Edit</button>
-                
-                
-                
-                                <button @click="deleteItem(item.id)" class="text-red-600 hover:text-red-800 text-sm font-medium">Hapus</button>
+                                <button v-if="['ketua_umum', 'pengurus'].includes(userRole)" @click="openEditModal(item)" class="text-blue-600 hover:text-blue-800 text-sm mr-3 font-medium">Edit</button>
+                                <button v-if="['ketua_umum', 'pengurus'].includes(userRole)" @click="deleteItem(item.id)" class="text-red-600 hover:text-red-800 text-sm font-medium">Hapus</button>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+
+            <!-- Kartu Mobile Inventaris (Khusus Penggunaan Handheld di Gudang Alat) -->
+            <div class="block md:hidden divide-y divide-gray-100">
+                <div v-if="!inventories || inventories.length === 0" class="py-8 text-center text-gray-500 text-xs">
+                    Belum ada data inventaris.
+                </div>
+                <div v-else v-for="item in inventories" :key="item.id" class="p-3.5 bg-white hover:bg-gray-50 flex flex-col gap-2">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-gray-100 text-gray-700 font-semibold">{{ item.item_code }}</span>
+                            <h4 class="font-bold text-gray-900 text-sm mt-1 leading-snug">{{ item.name }}</h4>
+                            <p class="text-xs text-gray-500 mt-0.5">Kategori: {{ item.category }}</p>
+                        </div>
+                        <div class="flex flex-col items-end gap-1 shrink-0">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="item.status === 'Tersedia' ? 'bg-emerald-100 text-emerald-700' : (item.status === 'Dipinjam' ? 'bg-blue-100 text-blue-700' : 'bg-rose-100 text-rose-700')">
+                                {{ item.status }}
+                            </span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">
+                                {{ item.condition }}
+                            </span>
+                        </div>
+                    </div>
+                    <p v-if="item.catatan" class="text-xs text-gray-500 italic bg-gray-50 p-2 rounded">
+                        Catatan: {{ item.catatan }}
+                    </p>
+                    <div class="flex items-center justify-end gap-2 pt-1 border-t border-gray-50">
+                        <button v-if="['ketua_umum', 'pengurus'].includes(userRole)" @click="openEditModal(item)" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">Edit</button>
+                        <button v-if="['ketua_umum', 'pengurus'].includes(userRole)" @click="deleteItem(item.id)" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- MODAL TAMBAH / EDIT DATA -->
-        <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50">
-            <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+        <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-xs p-4">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-5 sm:p-6 max-h-[90vh] overflow-y-auto">
                 <!-- Judul Modal Dinamis -->
                 <h3 class="text-lg font-bold text-gray-900 mb-4">
                     {{ isEditing ? 'Edit Inventaris' : 'Tambah Inventaris Baru' }}

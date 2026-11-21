@@ -11,6 +11,7 @@ const props = defineProps({
     users: Array,
     inventories: Array,
     filters: Object, // Tambahkan filters di sini
+    userRole: String
 });
 
 // Ubah nama variabel menjadi 'search' agar cocok dengan HTML
@@ -51,28 +52,33 @@ const updateStatus = (id, newStatus) => {
     <Head title="Manajemen Peminjaman" />
 
     <InternalLayout>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="p-6 border-b flex justify-between items-center bg-gray-50/50">
+        <div class="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
+            <!-- Header Section -->
+            <div class="p-4 sm:p-6 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-gray-50/50">
                 <div>
-                    <h3 class="text-lg font-bold text-gray-900">Data Peminjaman Alat</h3>
-                    <p class="text-sm text-gray-500">Persetujuan dan pencatatan alat keluar/masuk.</p>
+                    <h3 class="text-base sm:text-lg font-bold text-gray-900">Data Peminjaman Alat</h3>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Persetujuan dan pencatatan alat keluar/masuk operasional.</p>
                 </div>
-                <button @click="showModal = true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                <button @click="showModal = true" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition text-center shadow-xs">
                     + Ajukan Peminjaman
                 </button>
             </div>
-        <div class="p-4 border-b bg-white">
-            <div class="relative w-full md:w-1/3">
-                <input 
-                v-model="search" 
-                type="text" 
-                placeholder="Cari nama peminjam, nama alat, atau kode..." 
-                class="w-full border rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-            >
-                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"></path></svg>
+
+            <!-- Search Bar -->
+            <div class="p-3 sm:p-4 border-b bg-white">
+                <div class="relative w-full md:w-1/3">
+                    <input 
+                        v-model="search" 
+                        type="text" 
+                        placeholder="Cari nama peminjam, nama alat, atau kode..." 
+                        class="w-full border rounded-lg pl-10 pr-4 py-2 text-xs sm:text-sm focus:ring-blue-500 focus:border-blue-500"
+                    >
+                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"></path></svg>
+                </div>
             </div>
-        </div>
-            <div class="overflow-x-auto">
+
+            <!-- DESKTOP TABLE (hidden on mobile) -->
+            <div class="hidden md:block overflow-x-auto">
                 <table class="w-full text-left">
                     <thead class="bg-gray-50 text-sm border-b">
                         <tr>
@@ -85,36 +91,69 @@ const updateStatus = (id, newStatus) => {
                     </thead>
                     <tbody class="text-sm text-gray-700">
                         <tr v-if="!borrowings || borrowings.length === 0">
-                            <td colspan="6" class="py-8 text-center text-gray-500"">Belum ada transaksi peminjaman.</td>
+                            <td colspan="5" class="py-8 text-center text-gray-500">Belum ada transaksi peminjaman.</td>
                         </tr>
                         <tr v-else v-for="trx in borrowings" :key="trx.id" class="border-b hover:bg-gray-50">
-                            <td class="py-3 px-6">{{ trx.user?.name }}</td>
+                            <td class="py-3 px-6 font-semibold">{{ trx.user?.name }}</td>
                             <td class="py-3 px-6">{{ trx.inventory?.name }} ({{ trx.inventory?.item_code }})</td>
-                            <td class="py-3 px-6">{{ trx.start_date }} s/d {{ trx.end_date }}</td>
+                            <td class="py-3 px-6 text-xs text-gray-500">{{ trx.start_date }} s/d {{ trx.end_date }}</td>
                             <td class="py-3 px-6">
                                 <span :class="{
                                     'bg-yellow-100 text-yellow-700': trx.status === 'Pending',
                                     'bg-blue-100 text-blue-700': trx.status === 'Disetujui',
                                     'bg-green-100 text-green-700': trx.status === 'Dikembalikan',
                                     'bg-red-100 text-red-700': trx.status === 'Ditolak'
-                                }" class="px-2 py-1 rounded-full text-xs font-medium">
+                                }" class="px-2.5 py-1 rounded-full text-xs font-semibold">
                                     {{ trx.status }}
                                 </span>
                             </td>
                             <td class="py-3 px-6 text-right space-x-2">
-                                <button v-if="trx.status === 'Pending'" @click="updateStatus(trx.id, 'Disetujui')" class="text-blue-600 hover:underline">Setujui</button>
-                                <button v-if="trx.status === 'Pending'" @click="updateStatus(trx.id, 'Ditolak')" class="text-red-600 hover:underline">Tolak</button>
-                                <button v-if="trx.status === 'Disetujui'" @click="updateStatus(trx.id, 'Dikembalikan')" class="text-green-600 hover:underline">Kembalikan</button>
+                                <button v-if="['ketua_umum', 'pengurus'].includes(userRole) && trx.status === 'Pending'" @click="updateStatus(trx.id, 'Disetujui')" class="px-2.5 py-1 text-xs font-semibold rounded-md bg-blue-600 text-white hover:bg-blue-700">Setujui</button>
+                                <button v-if="['ketua_umum', 'pengurus'].includes(userRole) && trx.status === 'Pending'" @click="updateStatus(trx.id, 'Ditolak')" class="px-2.5 py-1 text-xs font-semibold rounded-md bg-red-50 text-red-600 hover:bg-red-100">Tolak</button>
+                                <button v-if="['ketua_umum', 'pengurus'].includes(userRole) && trx.status === 'Disetujui'" @click="updateStatus(trx.id, 'Dikembalikan')" class="px-2.5 py-1 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700">Kembalikan</button>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+
+            <!-- MOBILE CARDS (Khusus Pengurus di Lapangan / Gudang) -->
+            <div class="block md:hidden divide-y divide-gray-100">
+                <div v-if="!borrowings || borrowings.length === 0" class="py-8 text-center text-gray-500 text-xs">
+                    Belum ada transaksi peminjaman.
+                </div>
+                <div v-else v-for="trx in borrowings" :key="trx.id" class="p-3.5 bg-white hover:bg-gray-50 flex flex-col gap-2">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <h4 class="font-bold text-gray-900 text-sm leading-tight">{{ trx.user?.name ?? 'Pengguna' }}</h4>
+                            <p class="text-xs text-blue-600 font-semibold mt-0.5">{{ trx.inventory?.name }} ({{ trx.inventory?.item_code }})</p>
+                        </div>
+                        <span :class="{
+                            'bg-yellow-100 text-yellow-700': trx.status === 'Pending',
+                            'bg-blue-100 text-blue-700': trx.status === 'Disetujui',
+                            'bg-green-100 text-green-700': trx.status === 'Dikembalikan',
+                            'bg-red-100 text-red-700': trx.status === 'Ditolak'
+                        }" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold shrink-0">
+                            {{ trx.status }}
+                        </span>
+                    </div>
+
+                    <p class="text-[11px] text-gray-400">
+                        Periode: {{ trx.start_date }} s/d {{ trx.end_date }}
+                    </p>
+
+                    <div class="flex items-center justify-end gap-2 pt-1 border-t border-gray-50">
+                        <button v-if="['ketua_umum', 'pengurus'].includes(userRole) && trx.status === 'Pending'" @click="updateStatus(trx.id, 'Disetujui')" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700">Setujui</button>
+                        <button v-if="['ketua_umum', 'pengurus'].includes(userRole) && trx.status === 'Pending'" @click="updateStatus(trx.id, 'Ditolak')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Tolak</button>
+                        <button v-if="['ketua_umum', 'pengurus'].includes(userRole) && trx.status === 'Disetujui'" @click="updateStatus(trx.id, 'Dikembalikan')" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">Kembalikan</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Modal Pengajuan Peminjaman -->
-        <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50">
-            <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+        <!-- Modal Pengajuan Peminjaman Mobile Optimized -->
+        <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-xs p-4">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-5 sm:p-6 max-h-[90vh] overflow-y-auto">
                 <h3 class="text-lg font-bold mb-4">Ajukan Peminjaman</h3>
                 <form @submit.prevent="submitForm" class="space-y-4">
     <!-- Pilihan Anggota -->

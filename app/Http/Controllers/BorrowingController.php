@@ -5,66 +5,72 @@ namespace App\Http\Controllers;
 use App\Models\Borrowing;
 use App\Models\Inventory;
 use App\Models\User;
-use inertia\Inertia;
+use Inertia\Inertia;
 use Illuminate\Http\Request;
 
 class BorrowingController extends Controller
 {
     public function index(Request $request)
-{
-    $search = $request->input('search');
+    {
+        $search = $request->input('search');
 
-    // Filter pencarian pada tabel borrowings, user, dan inventory
-    $borrowings = Borrowing::with(['inventory', 'user'])
-        ->when($search, function ($query, $search) {
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'ilike', "%{$search}%");
-            })->orWhereHas('inventory', function ($q) use ($search) {
-                $q->where('name', 'ilike', "%{$search}%")
-                 ->orWhere('item_code', 'ilike', "%{$search}%");
-            });
-        })
-        ->latest()
-        ->get();
+        $query = Borrowing::with(['inventory', 'user'])
+            ->when($search, function ($query, $search) {
+                $term = '%' . strtolower($search) . '%';
+                $query->where(function ($w) use ($term) {
+                    $w->whereHas('user', function ($q) use ($term) {
+                        $q->whereRaw('LOWER(name) LIKE ?', [$term]);
+                    })->orWhereHas('inventory', function ($q) use ($term) {
+                        $q->whereRaw('LOWER(name) LIKE ?', [$term])
+                          ->orWhereRaw('LOWER(item_code) LIKE ?', [$term]);
+                    });
+                });
+            })
+            ->latest()
+            ->get();
 
-    // Optimasi: Cukup ambil ID dan nama untuk dropdown
-    $users = User::select('id', 'name')->get(); 
-    $inventories = Inventory::whereRaw('LOWER(status) = ?', ['tersedia'])->get();
+        // Anggota hanya bisa lihat peminjaman dirinya sendiri
+        if (auth()->user()->role === 'anggota') {
+            $query = $query->where('user_id', auth()->id());
+        }
 
-    return Inertia::render('Borrowings/Index', [
-        'borrowings'  => $borrowings,
-        'inventories' => $inventories,
-        'users'       => $users,
-        'filters'     => ['search' => $search], // Kirim parameter kembali ke Vue
-    ]);
-}
+        $borrowings = $query;
+
+        // Untuk inventories yang tersedia, hanya pengurus/ketua_umum yang lihat semua
+        $users = User::select('id', 'name')->get();
+        $inventories = Inventory::whereRaw('LOWER(status) = ?', ['tersedia'])->get();
+
+        return Inertia::render('Borrowings/Index', [
+            'borrowings'  => $borrowings,
+            'inventories' => $inventories,
+            'users'       => $users,
+            'filters'     => ['search' => $search],
+            'userRole'    => auth()->user()->role,
+        ]);
+    }
 
     public function store(Request $request)
     {
-       $validated = $request->validate([
-        'user_id'      => 'required|exists:users,id',
-        'inventory_id' => 'required|exists:inventories,id',
-        'start_date'   => 'required|date',
-        'end_date'     => 'required|date|after_or_equal:start_date',
-    ]);
+        $validated = $request->validate([
+            'user_id'      => 'required|exists:users,id',
+            'inventory_id' => 'required|exists:inventories,id',
+            'start_date'   => 'required|date',
+            'end_date'     => 'required|date|after_or_equal:start_date',
+        ]);
 
-    // 2. Set status awal pengajuan
-    $validated['status'] = 'Pending';
+        $validated['status'] = 'Pending';
 
-    // 3. Simpan ke database
-    Borrowing::create($validated);
+        Borrowing::create($validated);
 
-    return redirect()->back()->with('success', 'Pengajuan peminjaman berhasil dibuat.');
+        return redirect()->back()->with('success', 'Pengajuan peminjaman berhasil dibuat.');
     }
 
-    public function destroy($id)
+    public function destroy(Borrowing $borrowing)
     {
-        $borrowing = Borrowing::findOrFail($id);
         $borrowing->delete();
 
-        return redirect()->back()->with('success', 'Borrowing deleted successfully.');
+        return redirect()->back()->with('success', 'Data peminjaman berhasil dihapus.');
     }
-
 
     public function updateStatus(Request $request, Borrowing $borrowing)
     {
@@ -72,17 +78,15 @@ class BorrowingController extends Controller
             'status' => 'required|in:Pending,Disetujui,Ditolak,Dikembalikan'
         ]);
 
-        // Simpan status baru dan catat ID pengurus yang menyetujui
         $borrowing->update([
             'status'      => $validated['status'],
-            'approved_by' => 1 // Ganti dengan auth()->id() jika fitur login sudah aktif
+            'approved_by' => auth()->id() ?? 1,
         ]);
 
-        // Otomatis ubah status ketersediaan alat di tabel Inventories
         if ($validated['status'] === 'Disetujui') {
-            $borrowing->inventory->update(['status' => 'Dipinjam']);
+            $borrowing->inventory?->update(['status' => 'Dipinjam']);
         } elseif ($validated['status'] === 'Dikembalikan') {
-            $borrowing->inventory->update(['status' => 'Tersedia']);
+            $borrowing->inventory?->update(['status' => 'Tersedia']);
         }
 
         return redirect()->back()->with('success', 'Status peminjaman berhasil diperbarui!');

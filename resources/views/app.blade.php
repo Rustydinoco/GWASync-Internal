@@ -6,6 +6,7 @@
     <title inertia>GWASync</title>
     
     <!-- Memanggil Vite untuk memuat app.js beserta CSS Tailwind -->
+    @routes
     @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
     @inertiaHead
 </head>

@@ -9,10 +9,9 @@ class UserController extends Controller
 {
     public function index()
     {
-
-        $users = User::select('nia','name','email','password','role','phone','kta_qr_code')
-        ->latest()
-        ->paginate(10);
+        $users = User::select('id', 'nia', 'name', 'email', 'role', 'phone', 'kta_qr_code')
+            ->latest()
+            ->paginate(10);
 
         return Inertia::render('Users/Index', [
             'users' => $users

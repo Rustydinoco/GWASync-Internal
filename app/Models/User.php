@@ -15,6 +15,7 @@ class User extends Authenticatable // implements FilamentUser dihapus
 
     protected $fillable = [
         'nia',
+        'nim',
         'name',
         'email',
         'password',
@@ -22,10 +23,12 @@ class User extends Authenticatable // implements FilamentUser dihapus
         'phone',
         'division',
         'status',
+        'kta_qr_code',
     ];
     
     protected $hidden = [
-        'password', 
+        'password',
+        'remember_token',
     ];
 
     protected function casts(): array
@@ -43,11 +46,6 @@ class User extends Authenticatable // implements FilamentUser dihapus
     public function approvedBorrowings(): HasMany
     {
         return $this->hasMany(Borrowing::class, 'approved_by');
-    }
-
-    public function verifiedPartnerships(): HasMany
-    {
-        return $this->hasMany(Partnership::class, 'verified_by');
     }
 
     public function attendances(): HasMany
